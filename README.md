@@ -13,7 +13,7 @@ ETH Zurich
 
 ![Teaser GIF](assets/teaser.gif)
 
-Our method achieves fast and robust dynamic-static decompoisition based on gaussian splatting.
+Our method achieves fast⚡️ and robust⛷️ dynamic-static decomposition based on gaussian splatting.
 
 
 ## News
@@ -79,7 +79,7 @@ The dataset structureshould look follows
 
 ```
 ### Dataset processing
-Note: The camera poses in [HyperNeRF](https://github.com/google/hypernerf) are rather inaccurate, as pointed out in [previous work](https://github.com/CVMI-Lab/SC-GS). Therefore we adopted colmap for pose estimation and only used this dataset for qualitative comparison. You could find the example of perpared Vrig-cheicken scene [here](https://drive.google.com/file/d/1BoWvcSuQlGLdaO8iQIPuJFhiL1RldYhs/view?usp=drive_link).
+Note: The camera poses in [HyperNeRF](https://github.com/google/hypernerf) are rather inaccurate, as pointed out in [previous work](https://github.com/CVMI-Lab/SC-GS). Therefore we adopted colmap for pose estimation and only used this dataset for qualitative comparison. You could find the example of prepared Vrig-cheicken scene [here](https://drive.google.com/file/d/1BoWvcSuQlGLdaO8iQIPuJFhiL1RldYhs/view?usp=drive_link).
 
 ### Todo
 - release detailed scripts pre-processing aria datasets.
