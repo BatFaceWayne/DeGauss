@@ -12,6 +12,7 @@ ETH Zurich
 ---
 
 ![Teaser GIF](assets/teaser.gif)
+
 Our method achieves fast and robust dynamic-static decompoisition based on gaussian splatting.
 
 
