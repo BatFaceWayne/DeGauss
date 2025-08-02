@@ -52,7 +52,7 @@ OptimizationParams = dict(
     use_penal_spiky_gaussians=False,
     ##### SH learning rate downscaling start, /20 default. set to 2 to regularize foreground modeling
     SH_lr_downscaling_start=2,
-    SH_lr_downscaling_end=8,
+    SH_lr_downscaling_end=2,
     ###### accumulation steps for training for sparse image collections
     accumulation_steps=4,
     lambda_main_loss=4,

@@ -9,9 +9,8 @@ ModelHiddenParams = dict(
     },
 )
 OptimizationParams = dict(
-    coarse_mean_override = False,
-    grid_lr_init= 0.0004,
-    grid_lr_final=0.00001,
+    grid_lr_init= 0.0008,
+    grid_lr_final=0.00002,
     lambda_depth_smoothness = 0.01,
     make_foreground_thresh_larger = True,
     densify_until_iter=26_000,
