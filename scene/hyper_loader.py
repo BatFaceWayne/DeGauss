@@ -19,6 +19,8 @@ from utils.general_utils import PILtoTorch
 import torch.nn.functional as F
 from utils.graphics_utils import getWorld2View2, focal2fov, fov2focal
 from utils.pose_utils import smooth_camera_poses
+
+
 class CameraInfo(NamedTuple):
     uid: int
     R: np.array
@@ -30,18 +32,19 @@ class CameraInfo(NamedTuple):
     image_name: str
     width: int
     height: int
-    time : float
+    time: float
     mask: np.array
+    SD_feature: np.array
 
 
 class Load_hyper_data(Dataset):
-    def __init__(self, 
-                 datadir, 
+    def __init__(self,
+                 datadir,
                  ratio=1.0,
                  use_bg_points=False,
                  split="train"
                  ):
-        
+
         from .utils import Camera
         datadir = os.path.expanduser(datadir)
         with open(f'{datadir}/scene.json', 'r') as f:
@@ -61,9 +64,9 @@ class Load_hyper_data(Dataset):
         self.split = split
         if len(self.val_id) == 0:
             self.i_train = np.array([i for i in np.arange(len(self.all_img)) if
-                            (i%4 == 0)])
-            self.i_test = self.i_train+2
-            self.i_test = self.i_test[:-1,]
+                                     (i % 4 == 0)])
+            self.i_test = self.i_train + 2
+            self.i_test = self.i_test[:-1, ]
         else:
             self.train_id = dataset_json['train_ids']
             self.i_test = []
@@ -78,7 +81,7 @@ class Load_hyper_data(Dataset):
         self.all_cam = [meta_json[i]['camera_id'] for i in self.all_img]
         self.all_time = [meta_json[i]['warp_id'] for i in self.all_img]
         max_time = max(self.all_time)
-        self.all_time = [meta_json[i]['warp_id']/max_time for i in self.all_img]
+        self.all_time = [meta_json[i]['warp_id'] / max_time for i in self.all_img]
         self.selected_time = set(self.all_time)
         self.ratio = ratio
         self.max_time = max(self.all_time)
@@ -91,37 +94,40 @@ class Load_hyper_data(Dataset):
 
             self.all_cam_params.append(camera)
         self.all_img_origin = self.all_img
-        self.all_depth = [f'{datadir}/depth/{int(1/ratio)}x/{i}.npy' for i in self.all_img]
+        self.all_depth = [f'{datadir}/depth/{int(1 / ratio)}x/{i}.npy' for i in self.all_img]
 
-        self.all_img = [f'{datadir}/rgb/{int(1/ratio)}x/{i}.png' for i in self.all_img]
+        self.all_img = [f'{datadir}/rgb/{int(1 / ratio)}x/{i}.png' for i in self.all_img]
 
         self.h, self.w = self.all_cam_params[0].image_shape
         self.map = {}
         self.image_one = Image.open(self.all_img[0])
-        self.image_one_torch = PILtoTorch(self.image_one,None).to(torch.float32)
-        if os.path.exists(os.path.join(datadir,"covisible")):
+        self.image_one_torch = PILtoTorch(self.image_one, None).to(torch.float32)
+        if os.path.exists(os.path.join(datadir, "covisible")):
             self.image_mask = [f'{datadir}/covisible/{int(2)}x/val/{i}.png' for i in self.all_img_origin]
         else:
             self.image_mask = None
-        
+
         # self.generate_video_path()
         # self.i_test
+
     def generate_video_path(self):
-        
-        self.select_video_cams = [item for i, item in enumerate(self.all_cam_params) if i % 1 == 0 ]
-        self.video_path, self.video_time = smooth_camera_poses(self.select_video_cams,10)
+
+        self.select_video_cams = [item for i, item in enumerate(self.all_cam_params) if i % 1 == 0]
+        self.video_path, self.video_time = smooth_camera_poses(self.select_video_cams, 10)
         # breakpoint()
         self.video_path = self.video_path[:500]
         self.video_time = self.video_time[:500]
         # breakpoint()
+
     def __getitem__(self, index):
         if self.split == "train":
             return self.load_raw(self.i_train[index])
- 
+
         elif self.split == "test":
             return self.load_raw(self.i_test[index])
         elif self.split == "video":
             return self.load_raw(index)
+
     def __len__(self):
         if self.split == "train":
             return len(self.i_train)
@@ -130,6 +136,7 @@ class Load_hyper_data(Dataset):
         elif self.split == "video":
             return len(self.i_test)
             # return len(self.video_v2)
+
     def load_video(self, idx):
         if idx in self.map.keys():
             return self.map[idx]
@@ -148,10 +155,11 @@ class Load_hyper_data(Dataset):
         image_path = "/".join(self.all_img[idx].split("/")[:-1])
         image_name = self.all_img[idx].split("/")[-1]
         caminfo = CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=self.image_one_torch,
-                              image_path=image_path, image_name=image_name, width=w, height=h, time=time, mask=None
-                              )
+                             image_path=image_path, image_name=image_name, width=w, height=h, time=time, mask=None
+                             )
         self.map[idx] = caminfo
-        return caminfo  
+        return caminfo
+
     def load_raw(self, idx):
         if idx in self.map.keys():
             return self.map[idx]
@@ -159,8 +167,11 @@ class Load_hyper_data(Dataset):
         image = Image.open(self.all_img[idx])
         w = image.size[0]
         h = image.size[1]
-        image = PILtoTorch(image,None)
-        image = image.to(torch.float32)[:3,:,:]
+        # image = PILtoTorch(image,None)
+        # image = PILtoTorch(image,None)
+        image = torch.from_numpy(np.asarray(image)).permute(2, 0, 1)
+
+        image = image.to(torch.float32)[:3, :, :]
         time = self.all_time[idx]
         R = camera.orientation.T
         T = - camera.position @ R
@@ -168,23 +179,24 @@ class Load_hyper_data(Dataset):
         FovX = focal2fov(camera.focal_length, self.w)
         image_path = "/".join(self.all_img[idx].split("/")[:-1])
         image_name = self.all_img[idx].split("/")[-1]
-        if self.image_mask is not None and self.split == "test":
+        if self.image_mask is not None and self.split == "tesssst":
             mask = Image.open(self.image_mask[idx])
-            mask = PILtoTorch(mask,None)
-            mask = mask.to(torch.float32)[0:1,:,:]
+            mask = PILtoTorch(mask, None)
+            mask = mask.to(torch.float32)[0:1, :, :]
 
-            mask = F.interpolate(mask.unsqueeze(0), size=[self.h, self.w], mode='bilinear', align_corners=False).squeeze(0)
+            mask = F.interpolate(mask.unsqueeze(0), size=[self.h, self.w], mode='bilinear',
+                                 align_corners=False).squeeze(0)
         else:
             mask = None
 
-        
         caminfo = CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
-                              image_path=image_path, image_name=image_name, width=w, height=h, time=time, mask=mask
-                              )
+                             image_path=image_path, image_name=image_name, width=w, height=h, time=time, mask=mask,
+                             SD_feature=np.zeros(1)
+                             )
         self.map[idx] = caminfo
-        return caminfo  
+        return caminfo
 
-        
+
 def format_hyper_data(data_class, split):
     if split == "train":
         data_idx = data_class.i_train
@@ -200,23 +212,25 @@ def format_hyper_data(data_class, split):
         time = data_class.all_time[index]
         R = camera.orientation.T
         T = - camera.position @ R
+        # T =  camera.position
+
         FovY = focal2fov(camera.focal_length, data_class.h)
         FovX = focal2fov(camera.focal_length, data_class.w)
         image_path = "/".join(data_class.all_img[index].split("/")[:-1])
         image_name = data_class.all_img[index].split("/")[-1]
-        
+
         if data_class.image_mask is not None and data_class.split == "test":
             mask = Image.open(data_class.image_mask[index])
-            mask = PILtoTorch(mask,None)
-            
-            mask = mask.to(torch.float32)[0:1,:,:]
-            
-        
+            mask = PILtoTorch(mask, None)
+
+            mask = mask.to(torch.float32)[0:1, :, :]
+
+
         else:
             mask = None
         cam_info = CameraInfo(uid=uid, R=R, T=T, FovY=FovY, FovX=FovX, image=None,
-                              image_path=image_path, image_name=image_name, width=int(data_class.w), 
-                              height=int(data_class.h), time=time, mask=mask
+                              image_path=image_path, image_name=image_name, width=int(data_class.w),
+                              height=int(data_class.h), time=time, mask=mask, SD_feature=np.zeros(1)
                               )
         cam_infos.append(cam_info)
     return cam_infos
