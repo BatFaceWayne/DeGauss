@@ -1110,22 +1110,38 @@ def readHyperDataInfos(datadir,use_bg_points,eval):
     video_cam_infos.split="video"
 
     # ply_path = os.path.join(datadir, "points3D_downsample2.ply")
+    nerf_normalization = getNerfppNorm(train_cam)
 
     ply_path = os.path.join(datadir, "fused.ply")
     pcd = fetchPly(ply_path)
-    xyz = np.array(pcd.points)
+    pcd_max = pcd.points.max(axis=0)
+    pcd_min = pcd.points.min(axis=0)
+    #### adjust if needed
+    num_pts = 10000
+    print(f"Generating random point cloud ({num_pts})...")
 
-    pcd = pcd._replace(points=xyz)
-    nerf_normalization = getNerfppNorm(train_cam)
-    plot_camera_orientations(train_cam_infos, pcd.points)
-    scene_info = SceneInfo(point_cloud=pcd,
+    # We create random points inside the bounds of the synthetic Blender scenes
+    xyz = np.array(pcd.points)
+    xyz_len = list(range(xyz.shape[0]))
+    choice_selected = np.random.choice(xyz_len, min(len(xyz_len) // 10, 100), replace=False)
+    x = np.random.random((num_pts, 1)) * (pcd_max[0] - pcd_min[0]) + pcd_min[0]
+    y = np.random.random((num_pts, 1)) * (pcd_max[1] - pcd_min[1]) + pcd_min[1]
+    z = np.random.random((num_pts, 1)) * (pcd_max[2] - pcd_min[2]) + pcd_min[2]
+    xyz_random = np.hstack([x, y, z])
+    xyz = np.vstack((xyz[choice_selected, :], xyz_random))
+    shs = np.random.random((xyz.shape[0], 3))  # 255.0
+    pcd_2 = BasicPointCloud(points=xyz, colors=SH2RGB(shs), normals=np.zeros((len(xyz), 3)))
+
+    scene_info = SceneInfo(point_cloud=pcd_2,
                            train_cameras=train_cam_infos,
                            test_cameras=test_cam_infos,
-                           video_cameras=video_cam_infos,
+                           video_cameras=[test_cam_infos[0]],
+                           maxtime=max_time,
                            nerf_normalization=nerf_normalization,
                            ply_path=ply_path,
-                           maxtime=max_time
-                           )
+                           point_cloud_second=pcd,
+                           val_cameras=test_cam_infos)
+
 
     return scene_info
 def format_render_poses(poses,data_infos):
