@@ -421,7 +421,8 @@ class GaussianModel_dynamic:
 
 
     def reset_opacity_partially_small(self):
-        opacities_new = self._opacity
+        ##### a feature to force reset
+        opacities_new = self.get_opacity
         opacities_new_replace = inverse_sigmoid(
             torch.min(self.get_opacity, torch.ones_like(self.get_opacity) * 0.01))
         opacities_mask = np.array(list(range(0, self.get_opacity.shape[0])))
@@ -431,7 +432,8 @@ class GaussianModel_dynamic:
         self._opacity = optimizable_tensors["opacity"]
 
     def reset_opacity_partially(self):
-        opacities_new = self._opacity
+        ##### a feature to force reset
+        opacities_new = self.get_opacity
         opacities_new_replace = inverse_sigmoid(torch.min(self.get_opacity, torch.ones_like(self.get_opacity) * 0.01))
         opacities_mask = np.array(list(range(0, self.get_opacity.shape[0])))
         opacities_mask_select = np.random.choice(opacities_mask, int(opacities_mask.shape[0] * 0.5), replace=False)
@@ -1096,7 +1098,8 @@ class GaussianModel:
         """
         Partially resets the opacity of Gaussians to a small value.
         """
-        opacities_new = self._opacity
+        ##### a feature to force reset
+        opacities_new = self.get_opacity
         opacities_new_replace = inverse_sigmoid(torch.min(self.get_opacity, torch.ones_like(self.get_opacity) * 0.01))
         opacities_mask = np.array(list(range(0, self.get_opacity.shape[0])))
         opacities_mask_select = np.random.choice(opacities_mask, int(opacities_mask.shape[0] * 0.7), replace=False)

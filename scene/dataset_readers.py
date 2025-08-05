@@ -679,18 +679,32 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
     reading_dir = "images" if images == None else images
     use_1_user = False
     useonthego = False
-    usephoto= False
+    use_egogaussian= False
     use_hyper = False
 
     if os.path.exists( os.path.join(path,'global_points.ply')):
         use_1_user = True
+        useonthego = False
+        use_egogaussian = False
+        use_hyper = False
 
     all_images_names = os.listdir(os.path.join(path, reading_dir))
     if any(['clutter' in temp_im for temp_im in all_images_names]):
         useonthego = True
+        use_1_user = False
+        use_egogaussian = False
+        use_hyper = False
 
     if os.path.exists(os.path.join(path, 'dataset.json')):
         use_hyper = True
+        use_1_user = False
+        useonthego = False
+        use_egogaussian = False
+    if  os.path.exists(os.path.join(path, 'id.txt')):
+        use_egogaussian = True
+        use_1_user = False
+        useonthego = False
+        use_hyper = False
 
 
     if use_1_user:
@@ -839,16 +853,17 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
     elif use_hyper:
         cam_infos = readColmapCameras_hypernerf(cam_extrinsics=cam_extrinsics, cam_intrinsics=cam_intrinsics,
                                                    images_folder=os.path.join(path, reading_dir))
-        import json
-        js1 = json.load(open(os.path.join(path, 'dataset.json'), 'r'))
-        js2 = json.load(open(os.path.join(path, 'train_common.json'), 'r'))
-        mono_cameras = js2['frame_names']
+
 
         if False:
             train_cam_infos= [this_cam for i, this_cam in enumerate(cam_infos) if(i % 4 == 0)]
             test_cam_infos= [this_cam for i, this_cam in enumerate(cam_infos) if((i+1) % 4 == 0)]
             val_cam_infos= [this_cam for i, this_cam in enumerate(cam_infos) if((i+2) % 4 + 2== 0)]
         else:
+            import json
+            js1 = json.load(open(os.path.join(path, 'dataset.json'), 'r'))
+            js2 = json.load(open(os.path.join(path, 'train_common.json'), 'r'))
+            mono_cameras = js2['frame_names']
             # train_cam_infos= [this_cam for i, this_cam in enumerate(cam_infos) if this_cam.image_name in js1['train_ids']]
             train_cam_infos= [this_cam for i, this_cam in enumerate(cam_infos) if this_cam.image_name in mono_cameras]
 
@@ -886,6 +901,67 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
             pcd_max = xyz.max(axis=0) + 0.1 * nerf_normalization['radius']
             pcd_min = xyz.min(axis=0) - 0.1 * nerf_normalization['radius']
             num_pts = 30000
+            print(f"Generating random point cloud ({num_pts})...")
+
+            x = np.random.random((num_pts, 1)) * (pcd_max[0] - pcd_min[0]) + pcd_min[0]
+            y = np.random.random((num_pts, 1)) * (pcd_max[1] - pcd_min[1]) + pcd_min[1]
+            z = np.random.random((num_pts, 1)) * (pcd_max[2] - pcd_min[2]) + pcd_min[2]
+            xyz_random = np.hstack([x, y, z])
+            xyz = xyz_random
+            shs = np.random.random((xyz.shape[0], 3))  # 255.0
+            pcd_2 = BasicPointCloud(points=xyz, colors=SH2RGB(shs), normals=np.zeros((len(xyz), 3)))
+            pcd_3 = None
+    elif use_egogaussian:
+        cam_infos = readColmapCameras_hypernerf(cam_extrinsics=cam_extrinsics, cam_intrinsics=cam_intrinsics,
+                                                   images_folder=os.path.join(path, reading_dir))
+
+
+        if True:
+            train_cam_infos= [this_cam for i, this_cam in enumerate(cam_infos) if(i % 4 == 0)]
+            test_cam_infos= [this_cam for i, this_cam in enumerate(cam_infos) if((i+1) % 4 == 0)]
+            val_cam_infos= [this_cam for i, this_cam in enumerate(cam_infos) if((i+2) % 4 + 2== 0)]
+        else:
+            import json
+            js1 = json.load(open(os.path.join(path, 'dataset.json'), 'r'))
+            js2 = json.load(open(os.path.join(path, 'train_common.json'), 'r'))
+            mono_cameras = js2['frame_names']
+            # train_cam_infos= [this_cam for i, this_cam in enumerate(cam_infos) if this_cam.image_name in js1['train_ids']]
+            train_cam_infos= [this_cam for i, this_cam in enumerate(cam_infos) if this_cam.image_name in mono_cameras]
+
+            test_cam_infos= [this_cam for i, this_cam in enumerate(cam_infos) if this_cam.image_name in js1['val_ids']]
+            val_cam_infos= [this_cam for i, this_cam in enumerate(cam_infos) if this_cam.image_name in js1['val_ids']]
+
+        nerf_normalization = getNerfppNorm(train_cam_infos)
+
+        ply_path = os.path.join(path, "sparse/0/points3D.ply")
+        bin_path = os.path.join(path, "sparse/0/points3D.bin")
+        txt_path = os.path.join(path, "sparse/0/points3D.txt")
+
+        using_colmap = True
+        if using_colmap:
+
+            try:
+                xyz, rgb, _ = read_points3D_binary(bin_path)
+            except:
+                xyz, rgb, _ = read_points3D_text(txt_path)
+
+            storePly(ply_path, xyz, rgb)
+
+            use_dense = False
+            if use_dense:
+                pc_in_aria = os.path.join(path, "fused.ply")
+                import open3d as o3d
+                pcd_aria = o3d.io.read_point_cloud(pc_in_aria)
+
+                xyz = np.array(pcd_aria.points)
+
+
+
+            shs = rgb / 255
+            pcd = BasicPointCloud(points=xyz, colors=(shs), normals=np.zeros(np.shape(xyz)))
+            pcd_max = xyz.max(axis=0) + 0.1 * nerf_normalization['radius']
+            pcd_min = xyz.min(axis=0) - 0.1 * nerf_normalization['radius']
+            num_pts = 1000
             print(f"Generating random point cloud ({num_pts})...")
 
             x = np.random.random((num_pts, 1)) * (pcd_max[0] - pcd_min[0]) + pcd_min[0]
