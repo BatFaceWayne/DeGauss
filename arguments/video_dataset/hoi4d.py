@@ -14,7 +14,7 @@ OptimizationParams = dict(
     densify_grad_threshold_coarse=0.0004,
     densify_grad_threshold_fine_init=0.0004,
     prune_small_foreground_visbility = True,
-    downscale_mask_deform_lr = 0.01,
+    downscale_mask_deform_lr = 0.1,
     accumulation_steps=1,
     eval_include_train_cams = True,
 )
