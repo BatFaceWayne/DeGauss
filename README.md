@@ -12,12 +12,13 @@ ETH Zurich
 ---
 
 ![Teaser GIF](assets/teaser.gif)
+
 Our method achieves fast⚡️ and robust⛷️ dynamic-static decomposition based on 3D/4D gaussian splatting for a wide range of inputs as long egocentric videos, image collections, multi-view/monocular videos without extra supervision as optical flow.
 
 ---
 
 ![Mehtod](assets/method.png)
-Our method simultaneously reconstructs the scene and learns an unsupervised decomposition into decoupled 3DGS background and 4DGS foreground branches based on their expressiveness. This design enables removing incorrectly modeled Gaussians in either branch during optimization, escaping local minima and generalizing to wide range of input data.
+DeGauss simultaneously reconstructs the scene and learns an unsupervised decomposition into decoupled 3DGS background and 4DGS foreground branches based on their expressiveness. This design enables removing incorrectly modeled Gaussians in either branch during optimization, escaping local minima and generalizing to wide range of input data.
 
 ## News
 
