@@ -11,7 +11,7 @@ ETH Zurich
 
 ---
 
-![Teaser GIF](assets/teaser.gif)
+![Teaser](assets/teaser.jpg)
 
 Our method achieves fast⚡️ and robust⛷️ dynamic-static decomposition based on 3D/4D gaussian splatting for a wide range of inputs as long egocentric videos, image collections, multi-view/monocular videos without extra supervision as optical flow.
 
