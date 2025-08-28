@@ -457,8 +457,8 @@ def scene_reconstruction_degauss(dataset, optimization_params, hypernetwork_conf
 
         # ---- Motion Probability Processing ----
         if stage == "coarse":
-            motion_pro_first = motion_masks[:, 2:3, :, :]
-            motion_pro_second = motion_masks[:, 1:2, :, :]
+            motion_pro_first = motion_masks[:, 2:3, :, :] - 0.25
+            motion_pro_second = motion_masks[:, 1:2, :, :] + 0.25
         else:
             motion_pro_first = motion_masks[:, 2:3, :, :] + 1e-6
             motion_pro_second = motion_masks[:, 1:2, :, :] + 1e-6
@@ -585,11 +585,19 @@ def scene_reconstruction_degauss(dataset, optimization_params, hypernetwork_conf
 
         # ---- Depth Separation Losses ----
         if optimization_params.separation_high_prob:
-            loss_depth_back = torch.maximum(
-                (
-                            depth_images_dy_tensor - depth_images_tensor.clone().detach()) / scene.cameras_extent * pixel_valid_mask * (
+            if optimization_params.detach_background_separation:
+                loss_depth_back = torch.maximum(
+                    (
+                                depth_images_dy_tensor - (depth_images_tensor.clone().detach())) / scene.cameras_extent * pixel_valid_mask * (
+                                mask_comp_first > 0.6).clone().detach(),
+                    torch.tensor(0)).mean()
+            else:
+                ########### this helps to push floaters further away from camera and be pruned afterwards
+                loss_depth_back = torch.maximum(
+                    (
+                            depth_images_dy_tensor - depth_images_tensor) / scene.cameras_extent * pixel_valid_mask * (
                             mask_comp_first > 0.6).clone().detach(),
-                torch.tensor(0)).mean()
+                    torch.tensor(0)).mean()
             loss += optimization_params.lambda_loss_depth_back * loss_depth_back
         if optimization_params.separation_low_prob:
             loss_depth_forward = torch.maximum(

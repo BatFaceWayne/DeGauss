@@ -17,16 +17,18 @@ ModelParams=dict(
 
 OptimizationParams = dict(
     iterations = 120_000,
-    coarse_iterations = 1500,
+    coarse_iterations = 1000,
     densify_until_iter = 100_000,
     position_lr_max_steps = 120_000,
-    grid_lr_init= 0.0004,
-    grid_lr_final=0.000016,
+    #### we suggest grid lr and deformation lr to be larger for better separation for long monocular video
+    #### but consider lower this if the training is unstable
+    grid_lr_init= 0.0016,
+    grid_lr_final=0.00016,
+    deformation_lr_init=0.00016,
+    deformation_lr_final=0.000016,
     densify_grad_threshold_after=0.0002,
     densify_grad_threshold_coarse=0.0002,
     densify_grad_threshold_fine_init=0.0002,
-    deformation_lr_init=0.00016,
-    deformation_lr_final=0.000016,
     prune_small_foreground_visbility = False,
     downscale_mask_deform_lr = 0.1,
     accumulation_steps=1,
@@ -39,6 +41,7 @@ OptimizationParams = dict(
     pruning_interval = 300,
     weight_penal_light_end=0.1,
     separation_high_prob = True,
+    detach_background_separation = False,
     eval_include_train_cams = True,
     vignette_mask = './assets/vignette_imx577.png',
     camera_mask = './assets/aria_camera_mask.png',
@@ -51,4 +54,3 @@ OptimizationParams = dict(
 
 
 )
-#### next reset SH or Not

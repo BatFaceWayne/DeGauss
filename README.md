@@ -21,6 +21,7 @@ Our method achieves fast⚡️ and robust⛷️ dynamic-static decomposition bas
 DeGauss simultaneously reconstructs the scene and learns an unsupervised decomposition into decoupled 3DGS background and 4DGS foreground branches based on their expressiveness. This design enables removing incorrectly modeled Gaussians in either branch during optimization, escaping local minima and generalizing to wide range of input data.
 
 ## News
+2025.8.28: Release Aria preprocessing scripts
 
 2025.7.31: Initial Code Release
 
@@ -83,9 +84,49 @@ The dataset structureshould look follows
 ```
 ### Dataset processing
 Note: The camera poses in [HyperNeRF](https://github.com/google/hypernerf) are rather inaccurate, as pointed out in [previous work](https://github.com/CVMI-Lab/SC-GS). Therefore we adopted colmap for pose estimation and only used this dataset for qualitative comparison. You could find the example of prepared Vrig-chicken scene [here](https://drive.google.com/file/d/1BoWvcSuQlGLdaO8iQIPuJFhiL1RldYhs/view?usp=drive_link).
+<details>
+  <summary>Aria dataset processing</summary>
 
-### Todo
-- release detailed scripts pre-processing aria datasets.
+Please refer to the [nerfstudio](https://docs.nerf.studio/quickstart/custom_dataset.html#aria) steps to prepare camera poses and extract fisheye frames.  Then create an "images_orig" folder and copy the raw fisheye images there. And copy the "transforms.json" as "transforms_orig.json".
+The folder structure should look like this
+```
+├── Aria seq 1
+│   ├── images_orig # original fisheye images
+│   │   ├── camera-rgb_6469456023937.jpg
+│   │   ├── camera-rgb_6469456023938.jpg
+│   │   ├── ...
+│   ├── transforms_orig.json #(fisheye camera style)
+│   ├── global_points.ply
+
+```
+Then use the script in `scripts/linearize_aria.py` to transform the fisheye images into OPENCV camera format, and prepare COLMAP style input to be evaluated on various methods(including ours). 
+
+```python
+python scripts/linearize_aria.py --data path/to/aria/seq
+```
+After running this script you shoud ontain the structure as follows
+```
+├── Aria seq 1
+│   ├── images_orig # original fisheye images
+│   │   ├── camera-rgb_6469456023937.jpg
+│   │   ├── camera-rgb_6469456023938.jpg
+│   │   ├── ...
+│   ├── transforms_orig.json #(fisheye camera style)
+│   ├── global_points.ply
+│   ├── images # undistorted images
+│   │   ├── camera-rgb_6469456023937.jpg
+│   │   ├── camera-rgb_6469456023938.jpg
+│   │   ├── ...
+│   ├── transforms.json #(OPENCV camera style)
+│   ├── sparse ## COLMAP style OPENCV camera poses
+│   │   ├── 0
+│   │── masks  # Camera Masks, set up once at arguments/video_dataset/aria_data.py
+│       ├── camera-rgb_6469456023937.png
+│       ├── camera-rgb_6469456023938.png
+│       ├── ...
+```
+</details>
+
 ## Checkpoints and Renders 🔥
 To promote reproducibility, we have released our gaussian models, Full render and dynamic-static decomposition renders of Nerf on-the-go dataset, RobustNerf dataset and Neu3D dataset at [Checkpoints & Renders](https://huggingface.co/BatofGo/DeGauss_ckpts/tree/main). 
 

@@ -190,7 +190,9 @@ class OptimizationParams(ParamGroup):
         self.vignette_mask = None
         self.separation_low_prob = False
         self.separation_high_prob = False
+        self.detach_background_separation = True
         self.lambda_loss_depth_back = 0.1
+
 
 
 
