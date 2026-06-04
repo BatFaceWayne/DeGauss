@@ -173,7 +173,7 @@ class OptimizationParams(ParamGroup):
         self.prune_small_foreground_visbility = False
         self.reset_SH = False
         self.penalize_dynamic = True
-        self.coarse_mean_override = True,
+        self.coarse_mean_override = True
         self.lambda_main_loss = 1
         self.weight_penal_light_end = 0.5
         self.lambda_entropy_loss = 0.01

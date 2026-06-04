@@ -263,7 +263,7 @@ def readColmapCameras_onthego_dist(cam_extrinsics, cam_intrinsics, images_folder
         T = np.array(extr.tvec)
         downscale = 8
         all_names_folder = images_folder.split('/')
-        any_match_folder_name = [all_names_folder[iitte] == 'patio_new' for iitte in range(len(all_names_folder))]
+        any_match_folder_name = [all_names_folder[iitte] == 'patio' for iitte in range(len(all_names_folder))]
         if any(any_match_folder_name):
             downscale = 4
         if intr.model in ["SIMPLE_PINHOLE", "SIMPLE_RADIAL"]:
