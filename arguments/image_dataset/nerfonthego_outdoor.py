@@ -14,6 +14,6 @@ OptimizationParams = dict(
     lambda_depth_smoothness = 0.01,
     make_foreground_thresh_larger = True,
     densify_until_iter=26_000,
-    # force_white_background = True,  #### recommend to enable for patio scene
+    force_white_background = True,  #### recommend to enable for patio scene
 
 )
