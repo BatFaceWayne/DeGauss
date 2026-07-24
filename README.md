@@ -4,7 +4,7 @@
 
 ### [Project Page](https://batfacewayne.github.io/DeGauss.io/)| [arXiv Paper](https://arxiv.org/abs/2503.13176) | [Youtube](https://www.youtube.com/watch?v=d8U4--_jIcc) | [HuggingFace Model](https://huggingface.co/BatofGo/DeGauss_ckpts/tree/main)
 
-[Rui Wang](https://pdz.ethz.ch/the-group/people/rui-wang.html) [Quentin Lohmeyer](https://pdz.ethz.ch/the-group/people/lohmeyer.html) [Mirko Meboldt](https://pdz.ethz.ch/the-group/people/meboldt.html) [Siyu Tang](https://vlg.ethz.ch/team/Prof-Dr-Siyu-Tang.html)
+[Rui Wang](https://batfacewayne.github.io/ruiwang/) [Quentin Lohmeyer](https://pdz.ethz.ch/the-group/people/lohmeyer.html) [Mirko Meboldt](https://pdz.ethz.ch/the-group/people/meboldt.html) [Siyu Tang](https://vlg.ethz.ch/team/Prof-Dr-Siyu-Tang.html)
 
 ETH Zurich
 
